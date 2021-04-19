@@ -1,16 +1,40 @@
-
-function loadDoc() {
+let actualPositions = [];
+let actualGame; //Per a fer cache de quin joc mirar cada vegada que cridem la nova
+let gameStatus = {
+    positions: [],          //Les posicions d'aquesta partida
+    actualGameName: "",     //Per a fer cache de quin nom hem de anar fer ping
+    player: "",      //Quin jugador es el jugador actual
+    lastPlayer: "",     //El ultim que sabem que ha jugat, ens servirá per a comparar
+    // winsThisSession: 0, //atraves de cookies fer si guanya o perd consecutiu
+}
+//status O OK =TRUE KO = FALSE 
+//PLAYER O o X
+//response desc de el que ens dona
+//gameInfo com esta el tauler actualment
+loadGameInfo("test");
+const joinGameInProgress = () => {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("demo").innerHTML = this.responseText;
+            const infoActual = JSON.parse(this.responseText);
+
+            if (checkStatus(status)) {
+                gameStatus.positions = infoActual["gameInfo"];
+                //gameStatus.player = infoActual["players"]; ELL SERA EL CONTRARI
+                loadUI();
+            } else {
+                loadError(infoActual.status);
+            }
+
         }
     };
     xhttp.open("POST", "http://tictactoe.codifi.cat", true);
     xhttp.setRequestHeader("Content-Type", "application/json");
-    xhttp.send('{"action": "infoGame","gameName": "test"}');
+    xhttp.send(`{"action": "infoGame","gameName": "${gameStatus.actualGameName}"}`);
 }
-
+const checkStatus = (status) => {
+    return status == "OK";
+}
 //AFEGIR LOADING ANIMATION AL ACABAR FER QUE EL MENU PUJI
 const loadMainMenu = () => {
     //AMAGAR LOAD QUE ESTARA EN UNA CAPSA
@@ -22,14 +46,18 @@ const loadData = (typeAction) => {
 }
 
 const joinGame = () => {
-
+    gameStatus.actualGameName = document.getElementById("idGame").value;
+    loadInfoGame();
+    if (gameExists) {
+        loadUI();
+    }
 }
 
 const stopLoad = () => { //Amagar la animacio de carregar
     //let elem = document.querySelectorAll(".loading")[0];
     let op = 1;
     var timer = setInterval(function () {
-        if (op <= 0.1){
+        if (op <= 0.1) {
             clearInterval(timer);
             elem.style.display = 'none';
         }
