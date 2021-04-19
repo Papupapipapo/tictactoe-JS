@@ -1,16 +1,17 @@
-let actualPositions = [];
-let actualGame; //Per a fer cache de quin joc mirar cada vegada que cridem la nova
 let gameStatus = {
     positions: [],          //Les posicions d'aquesta partida
     actualGameName: "",     //Per a fer cache de quin nom hem de anar fer ping
-    player: "",      //Quin jugador es el jugador actual
-    lastPlayer: "",     //El ultim que sabem que ha jugat, ens servirá per a comparar
+    lastPassword: "",       //Cache del ultim password utilitzat per a unir la partida. Facilita el restart de partida
+    player: "",             //Quin jugador es el jugador actual
+    lastPlayer: "",         //El ultim que sabem que ha jugat, ens servirá per a comparar
     // winsThisSession: 0, //atraves de cookies fer si guanya o perd consecutiu
 }
 //status O OK =TRUE KO = FALSE 
 //PLAYER O o X
 //response desc de el que ens dona
 //gameInfo com esta el tauler actualment
+
+//-------------GET INFO 
 const loadInfoGame = (callback) => { //Aixi podrem fer aquesta funcio per a fer simplement check info i d'alli ja el usuari fer el que vulgui
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
@@ -23,18 +24,21 @@ const loadInfoGame = (callback) => { //Aixi podrem fer aquesta funcio per a fer 
     xhttp.setRequestHeader("Content-Type", "application/json");
     xhttp.send(`{"action": "infoGame","gameName": "${gameStatus.actualGameName}"}`);
 }
-
+//Funcions que pot fer callback
 const joinGameInProgress = (infoActual) => {
     if (checkStatus(infoActual.status)) {
         gameStatus.positions = infoActual["gameInfo"];
-        gameStatus.player = newPlayer(infoActual["player"])
+        let possiblePlayerOne = infoActual["player"];
         console.log("Joined correctly");
         //loadUI();
+        //CHECK SI HI EL ALTRE JUGADOR ESTA AGAFAT, SINO ESPERAR A el altre player estigui agafat
+        // gameStatus.player = newPlayer(possiblePlayerOne)
+        //startTimer();
     } else {
-        //loadError(infoActual.status);
+        //loadError(infoActual["response"]);
     }
 }
-const checkStatus = (status) => {
+const checkStatus = (status) => { //Mirar si l'status esta ok
     return status == "OK";
 }
 const newPlayer = (playerSign) => { //Per a dir al jugador que s'uneix quin es el seu simbol;
@@ -43,18 +47,77 @@ const newPlayer = (playerSign) => { //Per a dir al jugador que s'uneix quin es e
     }
     return "O";
 }
+//------------CREATE
+const loadCreateGame = (callback) => { //Aixi podrem fer aquesta funcio per a fer simplement check info i d'alli ja el usuari fer el que vulgui
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            const infoActual = JSON.parse(this.responseText);
+            callback(infoActual);
+        }
+    };
+    xhttp.open("POST", "http://tictactoe.codifi.cat", true);
+    xhttp.setRequestHeader("Content-Type", "application/json");
+    xhttp.send(`{"action": "createGame","gameName": "${gameStatus.actualGameName}","gamePassword": "${gameStatus.lastPassword}"}`);
+}
+//Funcions que pot fer callback 
+
+const createNewGame = (infoActual) => {
+    if (checkStatus(infoActual.status)) {
+        gameStatus.positions = infoActual["gameInfo"];
+        //loadChooseSign();
+        //----gameStatus.player = newPlayer(infoActual["player"])
+        console.log("Created correctly");
+        //loadUI();
+        
+        //startTimer();
+    } else {
+        //loadError(infoActual["response"]);
+    }
+}
 //AFEGIR LOADING ANIMATION AL ACABAR FER QUE EL MENU PUJI
 const loadMainMenu = () => {
     //AMAGAR LOAD QUE ESTARA EN UNA CAPSA
     //Pop in de botons
     //Afegir events al botons
 }
-const loadData = (typeAction) => {
-    let HTML = ``
+const loadFormGame = (typeAction) => { //Ensenya el container i ensenya o amaga la field de password i canvia la funció del botó
+
+    showFlex(document.getElementById("formContainer")); //Ensenya el container
+
+    //Que comprovi si es join aixi si no es estalviem que miri fins al final.  
+    //Aixó es ja que per defecte esta carregat com a join
+    if (typeAction == "join") {
+        return;
+    }
+    showFlex(document.getElementById("passwField"));
+    document.getElementById("actionButtonField").innerHTML = `<button type="button" class="btn btn-dark disabled" 
+    onclick="createGame()">Crear partida</button>`;
+
 }
 
-const joinGame = () => {
+const showFlex = (element) => { //Li donem un element i li dona display de flex
+    element.classList.remove("d-none");
+    element.classList.add("d-flex");
+}
+const hideFlex = (element) => { //Li donem un element flex i l'amaga
+    element.classList.add("d-none");
+    element.classList.remove("d-flex");
+}
+/* const joinOrCreate = (typeAction) => { 
+    if (typeAction == "join") return "joinGame()";
+    return "createGame()";
+} */
+const setDataGame = () => { //Posara el nom de la partida que volem unir-nos 
     gameStatus.actualGameName = document.getElementById("idGame").value;
+}
+const createGame = () => { //Creará una nova partida
+    setDataGame();
+    gameStatus.lastPassword = document.getElementById("passwordGame").value; //Creará la partida 
+    loadCreateGame(createNewGame);
+}
+const joinGame = () => { //Fará un info
+    setDataGame();
     loadInfoGame(joinGameInProgress);
 }
 
