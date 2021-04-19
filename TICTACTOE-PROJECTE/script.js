@@ -11,29 +11,37 @@ let gameStatus = {
 //PLAYER O o X
 //response desc de el que ens dona
 //gameInfo com esta el tauler actualment
-loadGameInfo("test");
-const joinGameInProgress = () => {
+const loadInfoGame = (callback) => { //Aixi podrem fer aquesta funcio per a fer simplement check info i d'alli ja el usuari fer el que vulgui
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
             const infoActual = JSON.parse(this.responseText);
-
-            if (checkStatus(status)) {
-                gameStatus.positions = infoActual["gameInfo"];
-                //gameStatus.player = infoActual["players"]; ELL SERA EL CONTRARI
-                loadUI();
-            } else {
-                loadError(infoActual.status);
-            }
-
+            callback(infoActual);
         }
     };
     xhttp.open("POST", "http://tictactoe.codifi.cat", true);
     xhttp.setRequestHeader("Content-Type", "application/json");
     xhttp.send(`{"action": "infoGame","gameName": "${gameStatus.actualGameName}"}`);
 }
+
+const joinGameInProgress = (infoActual) => {
+    if (checkStatus(infoActual.status)) {
+        gameStatus.positions = infoActual["gameInfo"];
+        gameStatus.player = newPlayer(infoActual["player"])
+        console.log("Joined correctly");
+        //loadUI();
+    } else {
+        //loadError(infoActual.status);
+    }
+}
 const checkStatus = (status) => {
     return status == "OK";
+}
+const newPlayer = (playerSign) => { //Per a dir al jugador que s'uneix quin es el seu simbol;
+    if (playerSign == "O") {
+        return "X";
+    }
+    return "O";
 }
 //AFEGIR LOADING ANIMATION AL ACABAR FER QUE EL MENU PUJI
 const loadMainMenu = () => {
@@ -47,10 +55,7 @@ const loadData = (typeAction) => {
 
 const joinGame = () => {
     gameStatus.actualGameName = document.getElementById("idGame").value;
-    loadInfoGame();
-    if (gameExists) {
-        loadUI();
-    }
+    loadInfoGame(joinGameInProgress);
 }
 
 const stopLoad = () => { //Amagar la animacio de carregar
