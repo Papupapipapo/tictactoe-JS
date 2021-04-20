@@ -13,8 +13,15 @@
 </head>
 
 <body class="absoluteCenter">
-    <div id="mainContainer" class="d-flex justify-content-center w-50">
-        <div id="formContainer" class="d-flex w-100">
+    <div id="mainContainer" class="d-flex justify-content-center w-50 h-50 align-middle">
+        <div id="buttonMenu" class="d-flex w-100">
+            <div class="w-100 d-flex flex-column py-2 justify-content-center">
+                <h1 class="text-center">TIC - TAC - TOE</h1>
+                <button onclick='loadFormGame("create")'>Crear partida</button>
+                <button onclick='loadFormGame("join")'>Unir-se</button>
+            </div>
+        </div>
+        <div id="formContainer" class="d-none w-100">
             <form class="w-100 text-center ">
                 <div class="d-flex flex-column py-2">
                     <label for="idGame">Codi Partida</label>
@@ -29,11 +36,46 @@
                 </div>
             </form>
         </div>
+        <div id="gameBoard" class="d-none w-100">
+            <div class="row rowGameBoard">
+                <div class="col-sm">
+                  One of three columns
+                </div>
+                <div class="col-sm">
+                  One of three columns
+                </div>
+                <div class="col-sm">
+                  One of three columns
+                </div>
+            </div>
+            <div class="row rowGameBoard">
+                <div class="col-sm">
+                  One of three columns
+                </div>
+                <div class="col-sm">
+                  One of three columns
+                </div>
+                <div class="col-sm">
+                  One of three columns
+                </div>
+            </div>
+            <div class="row rowGameBoard">
+                <div class="col-sm">
+                  One of three columns
+                </div>
+                <div class="col-sm">
+                  One of three columns
+                </div>
+                <div class="col-sm">
+                  One of three columns
+                </div>
+            </div>
+        </div>
        
     </div>
 
-    <div style="position:fixed;bottom:0;left:50%;" id="demo">
-
+    <div style="position:fixed;bottom:0;left: 50%;transform: translateX(-50%);" id="demo"> <!--Impromptu Pop up for errors-->
+    lol
     </div>
 
 </body>

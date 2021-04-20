@@ -6,3 +6,14 @@ html,body{
     display:grid;
     place-items:center;
 }
+.rowGameBoard{
+    height: 33.33%; /* as @passatgt mentioned in the comment, for the older browsers fallback */
+    height: calc(100% / 3);
+}
+.rowGameBoard .col-sm{
+    width: 33.33%; /* as @passatgt mentioned in the comment, for the older browsers fallback */
+    width: calc(100% / 3);
+}
+.rowGameBoard .col-sm:first-of-type { background-color: red }
+.rowGameBoard .col-sm:nth-of-type(2) { background-color: blue }
+.rowGameBoard .col-sm:nth-of-type(3) { background-color: green }

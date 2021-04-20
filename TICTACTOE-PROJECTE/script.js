@@ -6,6 +6,18 @@ let gameStatus = {
     lastPlayer: "",         //El ultim que sabem que ha jugat, ens servirá per a comparar
     // winsThisSession: 0, //atraves de cookies fer si guanya o perd consecutiu
 }
+let elemBoard;
+let elemButtonMenu;
+let elemFormContainer;
+
+window.onload = () => {
+    loadCacheElements();
+}
+const loadCacheElements = () => { //Fa cache dels tres main div
+    elemBoard = document.getElementById("gameBoard");
+    elemButtonMenu = document.getElementById("buttonMenu");
+    elemFormContainer = document.getElementById("formContainer");
+}
 //status O OK =TRUE KO = FALSE 
 //PLAYER O o X
 //response desc de el que ens dona
@@ -30,7 +42,7 @@ const joinGameInProgress = (infoActual) => {
         gameStatus.positions = infoActual["gameInfo"];
         let possiblePlayerOne = infoActual["player"];
         console.log("Joined correctly");
-        //loadUI();
+        loadBoard(); 
         //CHECK SI HI EL ALTRE JUGADOR ESTA AGAFAT, SINO ESPERAR A el altre player estigui agafat
         // gameStatus.player = newPlayer(possiblePlayerOne)
         //startTimer();
@@ -68,22 +80,16 @@ const createNewGame = (infoActual) => {
         //loadChooseSign();
         //----gameStatus.player = newPlayer(infoActual["player"])
         console.log("Created correctly");
-        //loadUI();
-        
+        //loadBoard;
+        //STOPLOADING();
         //startTimer();
     } else {
         //loadError(infoActual["response"]);
     }
 }
-//AFEGIR LOADING ANIMATION AL ACABAR FER QUE EL MENU PUJI
-const loadMainMenu = () => {
-    //AMAGAR LOAD QUE ESTARA EN UNA CAPSA
-    //Pop in de botons
-    //Afegir events al botons
-}
 const loadFormGame = (typeAction) => { //Ensenya el container i ensenya o amaga la field de password i canvia la funció del botó
-
-    showFlex(document.getElementById("formContainer")); //Ensenya el container
+    hideFlex(elemButtonMenu);
+    showFlex(elemFormContainer); //Ensenya el container
 
     //Que comprovi si es join aixi si no es estalviem que miri fins al final.  
     //Aixó es ja que per defecte esta carregat com a join
@@ -96,14 +102,6 @@ const loadFormGame = (typeAction) => { //Ensenya el container i ensenya o amaga 
 
 }
 
-const showFlex = (element) => { //Li donem un element i li dona display de flex
-    element.classList.remove("d-none");
-    element.classList.add("d-flex");
-}
-const hideFlex = (element) => { //Li donem un element flex i l'amaga
-    element.classList.add("d-none");
-    element.classList.remove("d-flex");
-}
 /* const joinOrCreate = (typeAction) => { 
     if (typeAction == "join") return "joinGame()";
     return "createGame()";
@@ -113,12 +111,47 @@ const setDataGame = () => { //Posara el nom de la partida que volem unir-nos
 }
 const createGame = () => { //Creará una nova partida
     setDataGame();
-    gameStatus.lastPassword = document.getElementById("passwordGame").value; //Creará la partida 
+    gameStatus.lastPassword = document.getElementById("passwordGame").value; //Posará la contraseya que utilitzarem fer a crear la partida
     loadCreateGame(createNewGame);
 }
-const joinGame = () => { //Fará un info
+const joinGame = () => { //Fará un info agafant quin es l'u
     setDataGame();
     loadInfoGame(joinGameInProgress);
+}
+
+
+//---------GAMEBOARD
+const loadBoard = () => {
+    hideFlex(elemFormContainer);
+    showGrid(elemBoard);
+    /* SISTEMA PER A QUE DETECTI ON  FA CLICK
+    elemBoard.addEventListener("click",(e) => {
+        e.target.style.backgroundColor = "#f2f2f2";
+    },false);*/
+    refreshGameBoardFields();
+}
+const refreshGameBoardFields = () => {
+
+}
+//-------------------MISCELANIOUS FUNCTIONS
+//-----------DISPLAYS
+
+const showFlex = (element) => { //Li donem un element i li dona display de flex
+    element.classList.remove("d-none");
+    element.classList.add("d-flex");
+}
+const hideFlex = (element) => { //Li donem un element flex i l'amaga donantli display none
+    element.classList.add("d-none");
+    element.classList.remove("d-flex");
+}
+
+const showGrid = (element) => { //Li donem un element i li dona display de flex
+    element.classList.remove("d-none");
+    element.classList.add("d-grid");
+}
+const hideGrid = (element) => { //Li donem un element i li dona display de flex
+    element.classList.remove("d-grid");
+    element.classList.add("d-none");
 }
 
 const stopLoad = () => { //Amagar la animacio de carregar
