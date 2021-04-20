@@ -49,40 +49,35 @@ html, body {
 
 .rowGameBoard:first-of-type {
     /*First row*/
-    border: black;
-    border-bottom: 2.5px solid;
+    border-bottom: black 2.5px solid;
 }
 
 .rowGameBoard:nth-of-type(2) {
     /*Second row*/
-    border: black;
-    border-top: 2.5px solid;
-    border-bottom: 2.5px solid;
+    border-top: black 2.5px solid;
+    border-bottom: black 2.5px solid;
 }
 
 .rowGameBoard:nth-of-type(3) {
     /*Third row*/
-    border: black;
-    border-top: 2.5px solid;
+    border-top: black 2.5px solid;
 }
 
 .rowGameBoard .col-sm:first-of-type {
     /*First col*/
-    border: black;
-    border-right: 2.5px solid;
+    border-right: black 2.5px solid;
 }
 
 .rowGameBoard .col-sm:nth-of-type(2) {
     /*Second col*/
-    border: black;
-    border-left: 2.5px solid;
-    border-right: 2.5px solid;
+    border-left: black 2.5px solid;
+    border-right: black 2.5px solid;
 }
 
 .rowGameBoard .col-sm:nth-of-type(3) {
     /*Third col*/
-    border: black;
-    border-left: 2.5px solid;
+    
+    border-left: black 2.5px solid;
 }
 
 @media only screen and (max-width: 768px) {

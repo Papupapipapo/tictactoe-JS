@@ -12,6 +12,7 @@ let elemFormContainer;
 let elemPopUp;
 let elemAlertBox;
 let elemChooseSign;
+let elemsGameCol;
 
 let auxLastChecked; //Aquest auxiliar es qui manega quina es la ultima columna que has fet
 
@@ -26,7 +27,7 @@ const loadCacheElements = () => { //Fa cache dels tres main div
     elemPopUp = document.getElementById("popUp");
     elemAlertBox = document.getElementById("alertBox");
     elemChooseSign = document.getElementById("chooseSign");
-
+    elemsGameCol = document.querySelectorAll(".colGameBoard");
 }
 const loadEvents = () => {
     document.getElementById("closeButton").addEventListener("click", () => { hideFlex(elemPopUp) }, false);
@@ -55,31 +56,31 @@ const loadInfoGame = (callback) => { //Aixi podrem fer aquesta funcio per a fer 
 //Funcions que pot fer callback
 const joinGameInProgress = (infoActual) => {
     if (checkStatus(infoActual.status)) {
-        gameStatus.positions = infoActual["gameInfo"];
-        let possiblePlayerOne = infoActual["player"];
+        updatePositions(infoActual);
+        let possiblePlayer = infoActual["player"];
         console.log("Joined correctly");
         loadBoard();
-        if(infoActual.player == ""){ 
-            //CHECK SI HI EL ALTRE JUGADOR ESTA AGAFAT, SINO ESPERAR A el altre player estigui agafat
+        /*
+        if(checkIfEmpty(possiblePlayer)){ 
+            //CHECK SI HI HA PLAYER, SINO ESPERAR A el altre player estigui agafat
+            loadPopUpInfo("Esperando accion de otro usuario");
             enableLoading();
-            while(infoActual.player == ""){
-
+            while(checkIfEmpty(infoActual["player"]) ){
+                
             }
-        }
-        gameStatus.player = newPlayer(possiblePlayerOne)
-        //startTimer();
+            possiblePlayer
+        }*/
+        gameStatus.player = infoActual["player"];
     } else {
         loadPopUpInfo(infoActual["response"]);
     }
 }
+
+const updatePositions = (infoActual) => {
+    gameStatus.positions = infoActual["gameInfo"];
+}
 const checkStatus = (status) => { //Mirar si l'status esta ok
     return status == "OK";
-}
-const newPlayer = (playerSign) => { //Per a dir al jugador que s'uneix quin es el seu simbol;
-    if (playerSign == "O") {
-        return "X";
-    }
-    return "O";
 }
 //------------CREATE
 const loadCreateGame = (callback) => { //Aixi podrem fer aquesta funcio per a fer simplement check info i d'alli ja el usuari fer el que vulgui
@@ -117,13 +118,8 @@ const loadFormGame = (typeAction) => { //Ensenya el container i ensenya o amaga 
     showFlex(document.getElementById("passwField"));
     document.getElementById("actionButtonField").innerHTML = `<button type="button" class="btn btn-dark disabled" 
     onclick="createGame()">Crear partida</button>`;
-
 }
 
-/* const joinOrCreate = (typeAction) => { 
-    if (typeAction == "join") return "joinGame()";
-    return "createGame()";
-} */
 const setDataGame = () => { //Posara el nom de la partida que volem unir-nos 
     gameStatus.actualGameName = document.getElementById("idGame").value;
 }
@@ -143,44 +139,188 @@ const selectSign = (e) => { //Aqui seleccionarem quin signe tindrem com a jugado
     hide(elemChooseSign);
     hideFlex(elemPopUp);
 }
+//--------MAKEMOVE
+const loadMakeMove = (movement) => { //Aixi podrem fer aquesta funcio per a fer simplement check info i d'alli ja el usuari fer el que vulgui
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            //const infoActual = JSON.parse(this.responseText);
+            postMoveCheck();
+            console.log("MOVEMENT EXITOSO");
+        }
+    };
+    xhttp.open("POST", "http://tictactoe.codifi.cat", true);
+    xhttp.setRequestHeader("Content-Type", "application/json");
+    xhttp.send(`{"action": "playGame","gameName": "${gameStatus.actualGameName}","movement": "${movement}","player": "${gameStatus.player}"}`);
+}
 
-
+const postMoveCheck = () => { //Comprovar si el jugador a guanyat, si no ha guanyat que posi la animació de carregar espera
+    loadInfoGame(updatePositions);
+    if(checkWin){
+        //loadPopUpWin
+    }
+    //enableLoading();
+    //startTimer();
+}
 //---------GAMEBOARD
 const loadBoard = () => {
     hideFlex(elemFormContainer);
     showGrid(elemBoard);
-    /* SISTEMA PER A QUE DETECTI ON  FA CLICK
-    elemBoard.addEventListener("click",(e) => {
-        e.target.style.backgroundColor = "#f2f2f2";
-    },false);*/
     refreshGameBoardFields();
 }
 const refreshGameBoardFields = () => {
+    let positionTracker = 0;
+    let compost;
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+            compost = convertColToCompost(col, row);
+            elemsGameCol[positionTracker].innerHTML = gameStatus.positions[compost];
+            positionTracker++;
+        }
+    }
+}
+const checkWin = () => {
+    let currentPlayer = gameStatus.player;
+    let positions = gameStatus.positions;
+    let compost;
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+            compost = convertColToCompost(col, row);
+            if (positions[compost] == currentPlayer) {
+                if (checkDirections(row, col)) {
+                    return true;
+                }
+            }
+    }}
+    return false;
+}
+const checkDirections = (row, col) => {
+    let resultCheckAngle = false;
+    if (row == 0) {
+        if (col == 0) {
+            resultCheckAngle = checkAnglePositive();
+        }
+        if (col == 2) {
+            resultCheckAngle = checkAngleNegative();
+        }
+    }
+    return checkHoritzontal(row, col) || checkVertical(row, col) || resultCheckAngle;
+}
+//Solament mirarán de forma positiva ja que si o si es el primer que es trobaria. 
+//Al ser de 3 es indiferent quin es el punt de referncia si o si es fent de forma positiva
+const checkHoritzontal = (row, col) => {
+    let currentPlayer = gameStatus.player;
+    let positions = gameStatus.positions;
+    let consecutive = 1;
+    let compost;
+    let trackCol = col;
+    while (positions[compost] == currentPlayer && trackCol < 3) {
+        trackCol++;
+        compost = convertColToCompost(trackCol, row);
+        if (positions[compost] == currentPlayer) {
+            consecutive++;
+        }
+    }
+    return consecutive == 3;
+}
+
+const checkVertical = (row, col) => {
+    let currentPlayer = gameStatus.player;
+    let positions = gameStatus.positions;
+    let consecutive = 1;
+    let compost;
+    let trackRow = row;
+    
+    while (positions[compost] == currentPlayer && trackRow < 3) {
+        trackRow++;
+        compost = convertColToCompost(col, trackRow);
+        if (positions[compost] == currentPlayer) {
+            consecutive++;
+        }
+    }
+    return consecutive == 3;
+}
+
+const checkAngleDescending = () => {//A1,B2,C3
+    let currentPlayer = gameStatus.player;
+    let positions = gameStatus.positions;
+    return currentPlayer == positions["A1"] && positions["A1"] == positions["B2"] && positions["B2"] == positions["C3"]
+    /* let consecutive = 1;
+    let compost;
+    let trackRow = row;
+    let trackCol = col;
+    while(positions[compost] == currentPlayer && trackRow < 3 && trackCol < 3){
+        trackRow++;
+        trackCol++;
+        compost = convertColToCompost(col,trackRow);
+        if(positions[compost] == currentPlayer){
+            consecutive++;
+        }
+    } */
+}
+const checkAngleAscending = () => { //A3 , B2, C1
+    let currentPlayer = gameStatus.player;
+    let positions = gameStatus.positions;
+    return currentPlayer == positions["A3"] && positions["A3"] == positions["B2"] && positions["B2"] == positions["C1"]
+    /*  let consecutive = 1;
+     let compost;
+     let trackRow = row;
+     let trackCol = col;
+     while(positions[compost] == currentPlayer && trackRow > -1 && trackCol > -1){
+         trackRow--;
+         trackCol--;
+         compost = convertColToCompost(col,trackRow);
+         if(positions[compost] == currentPlayer){
+             consecutive++;
+         }
+     } */
+}
+
+const convertColToCompost = (row, col) => {
+    let conversionCol = ["A", "B", "C"];
+    return String(conversionCol[col] + (row + 1));;
 
 }
 
-const loadPreview = (elem) => {
+//------------EVENTS DEL BOARD
+const previewMove = (e) => {
+    let target = e.target;
+    if (target.classList.contains("col-sm") && checkIfEmpty(target.textContent)) { //Comprova que sigui columna i que el texte estigui buit
+        target.style.color = "#f2f2f2";
+        loadPlayerSign(target);
+        auxLastChecked = target;
+        target.addEventListener("mouseleave", unloadPreview, false);
+    }
+}
+
+const loadPlayerSign = (elem) => {
     elem.innerHTML = gameStatus.player;
 }
 const unloadPreview = () => {
     auxLastChecked.innerHTML = "";
-    auxLastChecked.removeEventListener("mouseleave",unloadPreview,false);
+    auxLastChecked.style.removeProperty('color');
+    auxLastChecked.removeEventListener("mouseleave", unloadPreview, false);
 }
-const previewMove = (e) => {
-    let target = e.target;
-    console.log("TEST");
-    if(target.classList.contains("col-sm") && (/^\s*$/.test(target.textContent))){
-        console.log("SUCCESS");
-        loadPreview(target);
-        auxLastChecked = target;
-        target.addEventListener("mouseleave",unloadPreview,false);
-    }
-}
-const makeMove = (e) => {
+
+const makeMove = (e) => { //Al clicar lo hara permanente asi que no hace falta descargarlo
     //Hacer que pase de gris a color opaco
-    auxLastChecked.removeEventListener("mouseleave",unloadPreview,false);
+    let target = e.target;
+
+    if (auxLastChecked != target) {
+        loadPopUpInfo("Posició no es valida, ja esta ocupada!")
+        return;
+    }
+    auxLastChecked.removeEventListener("mouseleave", unloadPreview, false);
+    target.style.removeProperty('color');
+    let makeMoveTo = String(target.id);
+    loadMakeMove(makeMoveTo);
 }
+
 //-------------------MISCELANIOUS FUNCTIONS
+
+const checkIfEmpty = (string) => {
+    return /^\s*$/.test(string);
+}
 //---------POP UP
 const loadPopUp = () => {
     showFlex(elemPopUp);
