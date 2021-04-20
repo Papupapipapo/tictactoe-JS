@@ -1,19 +1,100 @@
-html,body{
-    height:100%;
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+.absoluteCenter {
+    display: grid;
+    place-items: center;
+}
+
+/* POP UP */
+.fixedCenter{
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color:white;
+    width:25%;
+    height:30%;
+    border-radius: 20px;
+    border: #f2f2f2 2px solid;
+    padding:10px;
+}
+#chooseSign{
+    place-items: center;
+    display: grid;
+}
+#buttonsSign{
+    height:90%;
     width:100%;
 }
-.absoluteCenter{
-    display:grid;
-    place-items:center;
-}
-.rowGameBoard{
-    height: 33.33%; /* as @passatgt mentioned in the comment, for the older browsers fallback */
+
+
+/*          GAME BOARD          */
+.rowGameBoard {
+    height: 33.33%;
     height: calc(100% / 3);
 }
-.rowGameBoard .col-sm{
-    width: 33.33%; /* as @passatgt mentioned in the comment, for the older browsers fallback */
+
+.rowGameBoard .col-sm {
+    font-size: 5vw;
+    text-align: center;
+    place-items: center;
+    display: grid;
+    padding: 0;
+    width: 33.33%;
     width: calc(100% / 3);
 }
-.rowGameBoard .col-sm:first-of-type { background-color: red }
-.rowGameBoard .col-sm:nth-of-type(2) { background-color: blue }
-.rowGameBoard .col-sm:nth-of-type(3) { background-color: green }
+
+.rowGameBoard:first-of-type {
+    /*First row*/
+    border: black;
+    border-bottom: 2.5px solid;
+}
+
+.rowGameBoard:nth-of-type(2) {
+    /*Second row*/
+    border: black;
+    border-top: 2.5px solid;
+    border-bottom: 2.5px solid;
+}
+
+.rowGameBoard:nth-of-type(3) {
+    /*Third row*/
+    border: black;
+    border-top: 2.5px solid;
+}
+
+.rowGameBoard .col-sm:first-of-type {
+    /*First col*/
+    border: black;
+    border-right: 2.5px solid;
+}
+
+.rowGameBoard .col-sm:nth-of-type(2) {
+    /*Second col*/
+    border: black;
+    border-left: 2.5px solid;
+    border-right: 2.5px solid;
+}
+
+.rowGameBoard .col-sm:nth-of-type(3) {
+    /*Third col*/
+    border: black;
+    border-left: 2.5px solid;
+}
+
+@media only screen and (max-width: 768px) {
+    #mainContainer {
+        width: 90% !important;
+        height: 70% !important;
+    }
+    .rowGameBoard .col-sm {
+        font-size: 10vh;
+    }
+    .fixedCenter{
+        height:60%;
+        width:80%;
+    }
+}

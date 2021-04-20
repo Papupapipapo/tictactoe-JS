@@ -9,14 +9,30 @@ let gameStatus = {
 let elemBoard;
 let elemButtonMenu;
 let elemFormContainer;
+let elemPopUp;
+let elemAlertBox;
+let elemChooseSign;
+
+let auxLastChecked; //Aquest auxiliar es qui manega quina es la ultima columna que has fet
 
 window.onload = () => {
     loadCacheElements();
+    loadEvents();
 }
 const loadCacheElements = () => { //Fa cache dels tres main div
     elemBoard = document.getElementById("gameBoard");
     elemButtonMenu = document.getElementById("buttonMenu");
     elemFormContainer = document.getElementById("formContainer");
+    elemPopUp = document.getElementById("popUp");
+    elemAlertBox = document.getElementById("alertBox");
+    elemChooseSign = document.getElementById("chooseSign");
+
+}
+const loadEvents = () => {
+    document.getElementById("closeButton").addEventListener("click", () => { hideFlex(elemPopUp) }, false);
+    document.getElementById("buttonsSign").addEventListener("click", selectSign, false);
+    elemBoard.addEventListener("mouseover", previewMove, false);
+    elemBoard.addEventListener("click", makeMove, false);
 }
 //status O OK =TRUE KO = FALSE 
 //PLAYER O o X
@@ -42,12 +58,18 @@ const joinGameInProgress = (infoActual) => {
         gameStatus.positions = infoActual["gameInfo"];
         let possiblePlayerOne = infoActual["player"];
         console.log("Joined correctly");
-        loadBoard(); 
-        //CHECK SI HI EL ALTRE JUGADOR ESTA AGAFAT, SINO ESPERAR A el altre player estigui agafat
-        // gameStatus.player = newPlayer(possiblePlayerOne)
+        loadBoard();
+        if(infoActual.player == ""){ 
+            //CHECK SI HI EL ALTRE JUGADOR ESTA AGAFAT, SINO ESPERAR A el altre player estigui agafat
+            enableLoading();
+            while(infoActual.player == ""){
+
+            }
+        }
+        gameStatus.player = newPlayer(possiblePlayerOne)
         //startTimer();
     } else {
-        //loadError(infoActual["response"]);
+        loadPopUpInfo(infoActual["response"]);
     }
 }
 const checkStatus = (status) => { //Mirar si l'status esta ok
@@ -77,14 +99,10 @@ const loadCreateGame = (callback) => { //Aixi podrem fer aquesta funcio per a fe
 const createNewGame = (infoActual) => {
     if (checkStatus(infoActual.status)) {
         gameStatus.positions = infoActual["gameInfo"];
-        //loadChooseSign();
-        //----gameStatus.player = newPlayer(infoActual["player"])
-        console.log("Created correctly");
-        //loadBoard;
-        //STOPLOADING();
-        //startTimer();
+        loadPopUpSign();
+        loadBoard();
     } else {
-        //loadError(infoActual["response"]);
+        loadPopUpInfo(infoActual["response"]);
     }
 }
 const loadFormGame = (typeAction) => { //Ensenya el container i ensenya o amaga la field de password i canvia la funció del botó
@@ -119,6 +137,13 @@ const joinGame = () => { //Fará un info agafant quin es l'u
     loadInfoGame(joinGameInProgress);
 }
 
+const selectSign = (e) => { //Aqui seleccionarem quin signe tindrem com a jugador
+    let targetID = e.target.id;
+    gameStatus.player = targetID;
+    hide(elemChooseSign);
+    hideFlex(elemPopUp);
+}
+
 
 //---------GAMEBOARD
 const loadBoard = () => {
@@ -133,25 +158,68 @@ const loadBoard = () => {
 const refreshGameBoardFields = () => {
 
 }
+
+const loadPreview = (elem) => {
+    elem.innerHTML = gameStatus.player;
+}
+const unloadPreview = () => {
+    auxLastChecked.innerHTML = "";
+    auxLastChecked.removeEventListener("mouseleave",unloadPreview,false);
+}
+const previewMove = (e) => {
+    let target = e.target;
+    console.log("TEST");
+    if(target.classList.contains("col-sm") && (/^\s*$/.test(target.textContent))){
+        console.log("SUCCESS");
+        loadPreview(target);
+        auxLastChecked = target;
+        target.addEventListener("mouseleave",unloadPreview,false);
+    }
+}
+const makeMove = (e) => {
+    //Hacer que pase de gris a color opaco
+    auxLastChecked.removeEventListener("mouseleave",unloadPreview,false);
+}
 //-------------------MISCELANIOUS FUNCTIONS
+//---------POP UP
+const loadPopUp = () => {
+    showFlex(elemPopUp);
+
+}
+const loadPopUpInfo = (stringToLoad) => {
+    document.getElementById("txtAlert").innerHTML = stringToLoad;
+    show(elemAlertBox);
+    loadPopUp();
+}
+const loadPopUpSign = () => {
+    show(elemChooseSign);
+    loadPopUp();
+}
+
 //-----------DISPLAYS
 
 const showFlex = (element) => { //Li donem un element i li dona display de flex
-    element.classList.remove("d-none");
+    show(element);
     element.classList.add("d-flex");
 }
 const hideFlex = (element) => { //Li donem un element flex i l'amaga donantli display none
-    element.classList.add("d-none");
+    hide(element);
     element.classList.remove("d-flex");
 }
 
 const showGrid = (element) => { //Li donem un element i li dona display de flex
-    element.classList.remove("d-none");
+    show(element);
     element.classList.add("d-grid");
 }
 const hideGrid = (element) => { //Li donem un element i li dona display de flex
+    hide(element);
     element.classList.remove("d-grid");
+}
+const hide = (element) => {
     element.classList.add("d-none");
+}
+const show = (element) => {
+    element.classList.remove("d-none");
 }
 
 const stopLoad = () => { //Amagar la animacio de carregar

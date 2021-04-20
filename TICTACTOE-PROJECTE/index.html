@@ -2,81 +2,92 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✖️ TIC TAC TOE ⚫</title>
-    <link rel="stylesheet" href="custom.css">
-    <script src="script.js"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✖️ TIC TAC TOE ⚫</title>
+  <link rel="stylesheet" href="custom.css">
+  <script src="script.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 </head>
 
 <body class="absoluteCenter">
-    <div id="mainContainer" class="d-flex justify-content-center w-50 h-50 align-middle">
-        <div id="buttonMenu" class="d-flex w-100">
-            <div class="w-100 d-flex flex-column py-2 justify-content-center">
-                <h1 class="text-center">TIC - TAC - TOE</h1>
-                <button onclick='loadFormGame("create")'>Crear partida</button>
-                <button onclick='loadFormGame("join")'>Unir-se</button>
-            </div>
+  <div id="mainContainer" class="d-flex justify-content-center w-50 h-50 align-middle">
+    <div id="buttonMenu" class="d-flex w-100">
+      <div class="w-100 d-flex flex-column py-2 justify-content-center">
+        <h1 class="text-center">TIC - TAC - TOE</h1>
+        <button onclick='loadFormGame("create")'>Crear partida</button>
+        <button onclick='loadFormGame("join")'>Unir-se</button>
+      </div>
+    </div>
+    <div id="formContainer" class="d-none w-100">
+      <form class="w-100 text-center ">
+        <div class="d-flex flex-column py-2">
+          <label for="idGame">Codi Partida</label>
+          <input type="text" id="idGame" name="idGame">
         </div>
-        <div id="formContainer" class="d-none w-100">
-            <form class="w-100 text-center ">
-                <div class="d-flex flex-column py-2">
-                    <label for="idGame">Codi Partida</label>
-                    <input type="text" id="idGame" name="idGame">
-                </div>
-                <div id="passwField" class="d-none flex-column py-2">
-                    <label for="passwordGame">Contrasenya</label>
-                    <input type="text" id="passwordGame" name="passwordGame">
-                </div>
-                <div id="actionButtonField" class="d-flex flex-column py-2">
-                    <button type="button" class="btn btn-dark disabled" onclick="joinGame()">Unir-se</button>
-                </div>
-            </form>
+        <div id="passwField" class="d-none flex-column py-2">
+          <label for="passwordGame">Contrasenya</label>
+          <input type="text" id="passwordGame" name="passwordGame">
         </div>
-        <div id="gameBoard" class="d-none w-100">
-            <div class="row rowGameBoard">
-                <div class="col-sm">
-                  One of three columns
-                </div>
-                <div class="col-sm">
-                  One of three columns
-                </div>
-                <div class="col-sm">
-                  One of three columns
-                </div>
-            </div>
-            <div class="row rowGameBoard">
-                <div class="col-sm">
-                  One of three columns
-                </div>
-                <div class="col-sm">
-                  One of three columns
-                </div>
-                <div class="col-sm">
-                  One of three columns
-                </div>
-            </div>
-            <div class="row rowGameBoard">
-                <div class="col-sm">
-                  One of three columns
-                </div>
-                <div class="col-sm">
-                  One of three columns
-                </div>
-                <div class="col-sm">
-                  One of three columns
-                </div>
-            </div>
+        <div id="actionButtonField" class="d-flex flex-column py-2">
+          <button type="button" class="btn btn-dark disabled" onclick="joinGame()">Unir-se</button>
         </div>
-       
+      </form>
+    </div>
+    <div id="gameBoard" class="d-none w-100">
+      <div class="row rowGameBoard">
+        <div class="col-sm">
+          O
+        </div>
+        <div class="col-sm">
+          X
+        </div>
+        <div class="col-sm">
+
+        </div>
+      </div>
+      <div class="row rowGameBoard">
+        <div class="col-sm">
+
+        </div>
+        <div class="col-sm">
+
+        </div>
+        <div class="col-sm">
+
+        </div>
+      </div>
+      <div class="row rowGameBoard">
+        <div class="col-sm">
+          X
+
+        </div>
+        <div class="col-sm">
+          O
+        </div>
+        <div class="col-sm">
+          X
+        </div>
+      </div>
     </div>
 
-    <div style="position:fixed;bottom:0;left: 50%;transform: translateX(-50%);" id="demo"> <!--Impromptu Pop up for errors-->
-    lol
+  </div>
+
+  <div id="popUp" class="fixedCenter d-none flex-column">
+    <div id="alertBox" class="d-none">
+      <p id="txtAlert">MMMMMM PATATAS</p>
+      <button id="closeButton">Close</button>
     </div>
+    <div id="chooseSign" class="w-100 h-100 d-none">
+      <h2 class="text-center">Escolleix quin signe jugaràs</h2>
+      <div id="buttonsSign" class="d-flex">
+        <button id="O" class="flex-fill">O</button>
+        <button id="X" class="flex-fill">X</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 
