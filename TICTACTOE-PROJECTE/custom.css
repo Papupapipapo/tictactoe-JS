@@ -21,7 +21,7 @@ html, body {
     border: #f2f2f2 2px solid;
     padding:10px;
 }
-#chooseSign{
+.centerGrid{
     place-items: center;
     display: grid;
 }
@@ -29,7 +29,9 @@ html, body {
     height:90%;
     width:100%;
 }
-
+#rematchButton{
+    width:70%;
+}
 
 /*          GAME BOARD          */
 .rowGameBoard {
