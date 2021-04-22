@@ -5,8 +5,11 @@ let gameStatus = {
     player: "",             //Quin jugador es el jugador actual
     lastPlayer: "",         //El ultim que sabem que ha jugat, ens servirá per a comparar
     lastWinner: "",
-    // winsThisSession: 0, //atraves de cookies fer si guanya o perd consecutiu
+    winsCrossThisSession: 0, //Per a fer track de cuantes victories porta en aquella pagina
+    winsCircleThisSession: 0,
 }
+
+//Cache de elements per a estalviar recursos
 let elemBoard;
 let elemButtonMenu;
 let elemFormContainer;
@@ -18,16 +21,21 @@ let elemChooseSign;
 let elemsGameCol;
 let elemEndGame;
 let elemResultText;
+let elemInfoBox;
+let elemInfoBoxGif;
+
+//Auxiliars a funcions de callback
 let currentTurn;
-
-
+let lastWinningPositionObject;
+let newGameOK = false;
 let auxLastChecked; //Aquest auxiliar es qui manega quina es la ultima columna que has fet
 
 window.onload = () => {
     loadCacheElements();
     loadEvents();
 }
-const loadCacheElements = () => { //Fa cache dels tres main div
+
+const loadCacheElements = () => { //Fa cache dels elements que volem guardar
     elemBoard = document.getElementById("gameBoard");
     elemButtonMenu = document.getElementById("buttonMenu");
     elemFormContainer = document.getElementById("formContainer");
@@ -39,13 +47,16 @@ const loadCacheElements = () => { //Fa cache dels tres main div
     elemEndGame = document.getElementById("endGame");
     elemCloseButton = document.getElementById("closeButton");
     elemGifAnimation = document.getElementById("gif");
+    elemInfoBox = document.getElementById("infoAbsolute");
+    elemInfoBoxGif = document.getElementById("gifInfo");
 }
-const loadEvents = () => {
+const loadEvents = () => { //Carrega els events generals a cada objecte
     elemCloseButton.addEventListener("click", closePopUpInfo, false);
     document.getElementById("rematch").addEventListener("click", rematch, false);
     document.getElementById("returnMenu").addEventListener("click", returnMenu, false);
     document.getElementById("buttonsSign").addEventListener("click", selectSign, false);
 }
+//Carrega els events del gameBoard el cuals poden ser activats o desactivats, per a evitar que toqui mes del que cal
 const boardEvents = () => {
     elemBoard.addEventListener("mouseover", previewMove, false);
     elemBoard.addEventListener("click", makeMove, false);
@@ -54,11 +65,6 @@ const cancelBoardEvents = () => {
     elemBoard.removeEventListener("mouseover", previewMove, false);
     elemBoard.removeEventListener("click", makeMove, false);
 }
-//status O OK =TRUE KO = FALSE 
-//PLAYER O o X
-//response desc de el que ens dona
-//gameInfo com esta el tauler actualment
-
 //-------------GET INFO 
 const loadInfoGame = (callback) => { //Aixi podrem fer aquesta funcio per a fer simplement check info i d'alli ja el usuari fer el que vulgui
     var xhttp = new XMLHttpRequest();
@@ -75,68 +81,113 @@ const loadInfoGame = (callback) => { //Aixi podrem fer aquesta funcio per a fer 
 
 
 //Funcions que pot fer callback
-const joinGameInProgress = (infoActual) => {
+const joinGameInProgress = (infoActual) => { //Per a fer join a una partida
+    gameStatus.player = "";
     if (checkStatus(infoActual.status)) {
         updatePositions(infoActual);
         let possiblePlayer = infoActual["player"];
-        console.log("Joined correctly");
         loadBoard();
-        checkEnd();
+        if (!checkEnd()) { //Si la partida no ha acabat, carregará els events
+            boardEvents();
+        }
         if (checkIfEmpty(possiblePlayer)) {
+            //CHECK SI HI HA PLAYER, SINO ESPERAR A el altre player estigui agafat
+            loadPopUpInfoWait("Esperant a altre usuari fagi primer moviment");
+            startWaitHost();
+        } else { //En cas de que tot estigui bé, el usuari que surt actualment que esta per jugar será el caracter del jugador
+            loadInfoBox();
+            gameStatus.player = possiblePlayer;
+        }
+    } else {
+        loadPopUpInfo(infoActual["response"]);
+    }
+}
+const joinReloadGame = (infoActual) => { //El mateix que abans pero refrescant el player per a els comprovants. Tambe nou comprovant de que el host hagi fet nova partida
+    gameStatus.player = "";
+    if (checkStatus(infoActual.status)) {
+        updatePositions(infoActual);
+        loadBoard();
+
+        if (compareKeys(lastWinningPositionObject, infoActual["gameInfo"])) {
+            loadPopUpInfoWait("Esperant a usuari host creei nova partida");
+            gameStatus.positions = infoActual["gameInfo"];
+            startWaitNewGame();
+        } else if (checkIfEmpty(infoActual["player"])) {
             //CHECK SI HI HA PLAYER, SINO ESPERAR A el altre player estigui agafat
             loadPopUpInfoWait("Esperant a altre usuari fagi primer moviment");
             startWaitHost();
         } else {
             gameStatus.player = possiblePlayer;
-        }
-
-        boardEvents();
-    } else {
-        loadPopUpInfo(infoActual["response"]);
-    }
-}
-const joinReloadGame = (infoActual) => {
-    if (checkStatus(infoActual.status)) {
-        updatePositions(infoActual);
-        let possiblePlayer = infoActual["player"];
-        loadBoard();
-        checkEnd();
-        if (checkIfEmpty(possiblePlayer)) {
-            //CHECK SI HI HA PLAYER, SINO ESPERAR A el altre player estigui agafat
-            loadPopUpInfoWait("Esperant a altre usuari fagi primer moviment");
-            startWaitHost();
-        } else {
-            gameStatus.player = possiblePlayer;
+            loadInfoBox();
         }
         boardEvents();
     } else {
         loadPopUpInfo(infoActual["response"]);
     }
 }
-let waitPlayer;
 
-const startWaitHost = () => { //El que porta el interval de si el host ha realitzat el seu moviment
+//-------AUX INTERVALS
+let waitPlayer; //Portará el interval de waitHost
+
+let startWaitHost = () => { //El que porta el interval de si el host ha realitzat el seu moviment
     clearInterval(waitPlayer);
     waitPlayer = setInterval(function () {
         loadInfoGame(playerCheck);
         if (!checkIfEmpty(gameStatus.player)) {
-            clearInterval(intr);
+            clearInterval(waitPlayer);
             stopLoad(elemAlertBox);
         }
     }, 1000);
 }
-const updatePositions = (infoActual) => {
+
+let waitnewGame; //Portará el interval de waitNewGame
+
+let startWaitNewGame = () => { //El que porta el interval de si el host ha realitzat el seu moviment
+    clearInterval(waitnewGame);
+    newGameOK = false;
+    waitnewGame = setInterval(function () {
+        loadInfoGame(newGameReloadCheck);
+        if (newGameOK) {
+            clearInterval(waitnewGame);
+        }
+    }, 1000);
+}
+
+function compareKeys(a, b) { //Compara dos objectes, util per a comparar les dues partides
+    return JSON.stringify(a) === JSON.stringify(b);
+}
+
+const updatePositions = (infoActual) => { //Actualitza el gameStatus.positions amb les noves dades
     gameStatus.positions = infoActual["gameInfo"];
 }
 
-const checkNewTurn  = (infoActual) => {
+const checkNewTurn = (infoActual) => { //Comprova si el jugador 1 ha fet el primer moviment, es fa aixi perque aprofita els callbacks
     currentTurn = infoActual["player"];
     updatePositions(infoActual);
 }
-const playerCheck = (infoActual) => {
+const newGameReloadCheck = (infoActual) => { //Aqui el que fara es primer comprovar si els dos jocs son iguals aixi evitar que afegeixi al contador innecesariament
+
+    if (!compareKeys(lastWinningPositionObject, infoActual["gameInfo"])) {
+        updatePositions(infoActual);
+        newGameOK = true;
+        //I com es un ansies comprova si s'ha realitzat el moviment del host i com no será el cas tornará a intentar-ho fins que el estigui d'acord
+        if (checkIfEmpty(infoActual["player"])) {
+            //CHECK SI HI HA PLAYER, SINO ESPERAR A el altre player estigui agafat
+            loadPopUpInfoWait("Esperant a altre usuari fagi primer moviment");
+            startWaitHost();
+
+        } else {
+            loadInfoBox();
+            gameStatus.player = possiblePlayer;
+        }
+    };
+}
+const playerCheck = (infoActual) => { //Comprovant de si el jugador host ha fet el primer moviment
     if (!checkIfEmpty(infoActual["player"])) {
         gameStatus.player = infoActual["player"];
         updatePositions(infoActual);
+        refreshGameBoardFields();
+        loadInfoBox();
     };
 }
 const checkStatus = (status) => { //Mirar si l'status esta ok
@@ -157,7 +208,7 @@ const loadCreateGame = (callback) => { //Aixi podrem fer aquesta funcio per a fe
 }
 //Funcions que pot fer callback 
 
-const createNewGame = (infoActual) => {
+const createNewGame = (infoActual) => { //Creará la partida, pero donará un missatge de error en cas de que no hagi funcionat
     if (checkStatus(infoActual.status)) {
         loadInfoGame(createNewGameInfo);
     } else {
@@ -166,17 +217,24 @@ const createNewGame = (infoActual) => {
 }
 const reloadNewGame = (infoActual) => { //Per si es revancha
     if (checkStatus(infoActual.status)) {
-        loadInfoGame(createNewGameInfo);
+        loadInfoGame(reloadNewGameInfo);
     } else {
         loadPopUpInfo(infoActual["response"]);
     }
 }
 
-const createNewGameInfo = (infoActual) => {
+const createNewGameInfo = (infoActual) => { //Una vegada carregada la partida, aixó inicialitza les dades i li dona a escollir al usuari entre les dues opcions
     updatePositions(infoActual);
     loadPopUpSign();
     boardEvents();
     loadBoard();
+}
+
+const reloadNewGameInfo = (infoActual) => { //Per si fem rematch, anirá per aquest camí que li guardará les dades
+    updatePositions(infoActual);
+    boardEvents();
+    loadBoard();
+    loadInfoBox();
 }
 
 const loadFormGame = (typeAction) => { //Ensenya el container i ensenya o amaga la field de password i canvia la funció del botó
@@ -189,7 +247,7 @@ const loadFormGame = (typeAction) => { //Ensenya el container i ensenya o amaga 
         return;
     }
     showFlex(document.getElementById("passwField"));
-    document.getElementById("actionButtonField").innerHTML = `<button type="button" class="btn btn-dark disabled" 
+    document.getElementById("actionButtonField").innerHTML = `<button type="button" class="btn btn-dark" 
     onclick="createGame()">Crear partida</button>`;
 }
 
@@ -209,6 +267,7 @@ const joinGame = () => { //Fará un info i carregará la partida
 const selectSign = (e) => { //Aqui seleccionarem quin signe tindrem com a jugador
     let targetID = e.target.id;
     gameStatus.player = targetID;
+    loadInfoBox();
     hide(elemChooseSign);
     hideFlex(elemPopUp);
 }
@@ -224,6 +283,8 @@ const loadMakeMove = (movement) => { //Aixi podrem fer aquesta funcio per a fer 
     xhttp.setRequestHeader("Content-Type", "application/json");
     xhttp.send(`{"action": "playGame","gameName": "${gameStatus.actualGameName}","movement": "${movement}","player": "${gameStatus.player}"}`);
 }
+
+//MAIN INTERVAL
 let intervalWaitMove; //Portará el timer interval per a comprovar la resposta
 const startTimer = () => {
     clearInterval(intervalWaitMove);
@@ -231,25 +292,25 @@ const startTimer = () => {
         loadInfoGame(checkNewTurn);
         if (currentTurn == gameStatus.player) {
             clearInterval(intervalWaitMove);
-            stopLoad(elemAlertBox);
             refreshGameBoardFields();
-            if(!checkEnd()){
+            if (!checkEnd()) {
+                hideInfoBoxWait();
                 boardEvents();
+            } else {
+                hide(elemAlertBox);
             }
         }
-    }, 1000);     
+    }, 1000);
 }
 const updatePositionsPostMove = (infoActual) => { //Comprovar si el jugador a guanyat, si no ha guanyat que posi la animació de carregar espera
     gameStatus.positions = infoActual["gameInfo"];
-    if(!checkEnd()){
+    if (!checkEnd()) {
         cancelBoardEvents();
-        loadPopUpInfoWait("Esperant al moviment del enemic");
+        loadInfoBoxWait();
         currentTurn = "";
         startTimer();
-        refreshGameBoardFields();   
+        refreshGameBoardFields();
     }
-    //enableLoading();
-    //startTimer();
 }
 
 
@@ -259,8 +320,10 @@ const stopLoad = (elem) => { //Amagar la animacio de carregar
     var timer = setInterval(function () {
         if (op <= 0.1) {
             clearInterval(timer);
-            closePopUpInfoWait();
             elem.style.opacity = 1;
+            closePopUpInfoWait();
+
+            return;
         }
         elem.style.opacity = op;
         elem.style.filter = 'alpha(opacity=' + op * 100 + ")";
@@ -269,7 +332,7 @@ const stopLoad = (elem) => { //Amagar la animacio de carregar
 }
 
 //---------GAMEBOARD
-const loadBoard = () => { //Carregar la 
+const loadBoard = () => { //Carregar la gameBoard i refrescarla
     if (elemFormContainer.classList.contains("d-flex")) { //Serveix per a si es simplement un reload
         hideFlex(elemFormContainer);
         showGrid(elemBoard);
@@ -277,7 +340,7 @@ const loadBoard = () => { //Carregar la
     refreshGameBoardFields();
 }
 
-const refreshGameBoardFields = () => {
+const refreshGameBoardFields = () => { //Recarrega la UI de gameBoard
     let positionTracker = 0;
     let compost;
     for (let col = 0; col < 3; col++) {
@@ -302,10 +365,10 @@ const previewMove = (e) => { //Carrega el moviment al fer hover
     }
 }
 
-const loadPlayerSign = (elem) => {
+const loadPlayerSign = (elem) => { //Fa que aparegui el simbol adecuat del jugador
     elem.innerHTML = gameStatus.player;
 }
-const unloadPreview = () => {
+const unloadPreview = () => { //Descarregar al moure el ratolí el preview
     auxLastChecked.innerHTML = "";
     auxLastChecked.style.removeProperty('color');
     auxLastChecked.removeEventListener("mouseleave", unloadPreview, false);
@@ -315,21 +378,35 @@ const makeMove = (e) => { //Al clicar lo hara permanente asi que no hace falta d
     //Hacer que pase de gris a color opaco
     let target = e.target;
 
-    if (auxLastChecked != target) {
-        loadPopUpInfo("Posició no es valida, ja esta ocupada!")
-        return;
+    //PER A MOBIL
+    if (window.innerWidth > 768) {
+        if (auxLastChecked != target) {
+            loadPopUpInfo("Posició no es valida, ja esta ocupada!")
+            return;
+        }
+    } else {
+        if (!checkIfEmpty(target.innerHTML)) {
+            loadPopUpInfo("Posició no es valida, ja esta ocupada!")
+            return;
+        }
+
     }
-    auxLastChecked.removeEventListener("mouseleave", unloadPreview, false);
+
+    target.removeEventListener("mouseleave", unloadPreview, false);
     target.style.removeProperty('color');
     let makeMoveTo = String(target.id);
     loadMakeMove(makeMoveTo);
 }
 
 //----------Win condition
-const checkEnd = () => {
-    if (checkWinMove()) {
-        loadPopUpEndGame(`Ha ganao ${gameStatus.lastWinner}`); //Se ha de cambiar a una funcion que sea mas bonito
+const checkEnd = () => { //Comprova si ha acabat per empat o guanyar la partida. En cas negatiu donará false;
+    if (checkWinMove()) { //Si guanya actualitza algunes dades i guarda la partida per si hem de crear de nou
+        loadPopUpEndGame(`Ha guanyat ${returnEmoji()}`); //Se ha de cambiar a una funcion que sea mas bonito
+        printWins();
         cancelBoardEvents();
+        cacheGame();
+        closeInfoBox();
+        hideInfoBoxWait();
         return true;
     }
     if (checkIfTie()) {
@@ -339,7 +416,27 @@ const checkEnd = () => {
     }
     return false;
 }
-const checkWinMove = () => {
+
+const returnEmoji = () => { //Per estetica retorna emoji
+    if (gameStatus.lastWinner == "X") return "✖️";
+    return "⚫";
+}
+
+const addWin = () => {  //Afegeix al contador de wins
+    if (gameStatus.lastWinner == "X") ++gameStatus.winsCrossThisSession;
+    else ++gameStatus.winsCircleThisSession;
+}
+const printWins = () => { //Posará les dades de partides guanyades actualitzat
+    addWin();
+    document.getElementById("crossWins").innerHTML = gameStatus.winsCrossThisSession;
+    document.getElementById("dotWins").innerHTML = gameStatus.winsCircleThisSession;
+}
+const cacheGame = () => { //Guardará la partida acabada, per a el sistema de rematch
+    lastWinningPositionObject = gameStatus.positions;
+}
+
+const checkWinMove = () => { //Comprovará els moviments dels dos usuaris per a veure si ha guanyat cap dels dos
+    //Es important que miri els dos ja que es pot donar el cas de que un jugador s'uneixi a una partida ja acabada i així podria veure qui va guanyar
     let playersToCheck = ["X", "O"];
     let positions = gameStatus.positions;
     let compost;
@@ -359,7 +456,7 @@ const checkWinMove = () => {
 
     return false;
 }
-const checkDirections = (row, col) => {
+const checkDirections = (row, col) => { //Aqui mira els moviments possibles de cadascun dels usuaris
     let resultCheckAngle = false;
     if (row == 0) {
         if (col == 0) {
@@ -395,7 +492,7 @@ const checkVertical = (row, col) => {
     let positions = gameStatus.positions;
     let consecutive = 1;
     let trackRow = row;
-    console.log(currentPlayer + " player V");
+
     while (positions[compost] == currentPlayer && trackRow < 3) {
         trackRow++;
         compost = convertColToCompost(col, trackRow);
@@ -419,7 +516,7 @@ const checkAngleDescending = (row, col) => { //A3 , B2, C1
     return currentPlayer == positions["A3"] && positions["A3"] == positions["B2"] && positions["B2"] == positions["C1"]
 }
 
-const checkIfTie = () => {
+const checkIfTie = () => { //Conta cuants no estan buits i si es igual a 9 significa que no poden fer res més
     let positions = gameStatus.positions;
     let counter = 0;
     for (let col = 0; col < 3; col++) {
@@ -430,38 +527,38 @@ const checkIfTie = () => {
             }
         }
     }
-    return counter == 8;
+    return counter == 9;
 }
-const convertColToCompost = (row, col) => {
+const convertColToCompost = (row, col) => { //Converteix les col a String que entén la API i l'objecte de posicions
     let conversionCol = ["A", "B", "C"];
     return String(conversionCol[col] + (row + 1));;
 }
 
-const rematch = () => {
+const rematch = () => { //un handler que ens servirá per a saber si l'usuari crea ell la partida o espera a que l'altre la creei
+    hide(elemEndGame);
+    hideFlex(elemPopUp);
     if (checkIfEmpty(gameStatus.lastPassword)) {
         rematchGuest();
     } else {
         rematchHost();
     }
 }
-const rematchHost = () => {
-    hide(elemEndGame);
-    hideFlex(elemPopUp);
+const rematchHost = () => { //Si es el host creará la partida
     loadCreateGame(reloadNewGame);
 }
-const rematchGuest = () => {
-    hide(elemEndGame);
-    hideFlex(elemPopUp);
+const rematchGuest = () => {//Si es el guest mirará la info
     loadInfoGame(joinReloadGame);
 }
 
 
 //-------------------MISCELANIOUS FUNCTIONS
 
-const checkIfEmpty = (string) => {
+const checkIfEmpty = (string) => { //Comprova si esta buit
     return /^\s*$/.test(string);
 }
 //---------POP UP
+
+//Bastant auto explicatori tot aixó. Carreguem displays i segons la seva categoria carrega i amaga diferents coses
 const loadPopUp = () => {
     showFlex(elemPopUp);
 }
@@ -481,19 +578,28 @@ const loadPopUpEndGame = (stringToLoad) => {
     show(elemEndGame);
     document.getElementById("resultText").innerHTML = stringToLoad;
     show(elemResultText);
-
     loadPopUp();
+}
+const loadInfoBox = () => {
+    show(elemInfoBox);
+    document.getElementById("charUser").innerHTML = gameStatus.player;
+}
+const loadInfoBoxWait = () => {
+    showFlex(elemInfoBox);
+    show(elemInfoBoxGif);
+    document.getElementById("txtInfo").innerHTML = "Esperant al enemic";
 }
 const loadPopUpSign = () => {
     show(elemChooseSign);
     loadPopUp();
 }
-
+//Aquest té de especial que es el de retornar al menu, i si escollim aquest també despejem les dades que tenim guardades
 const returnMenu = () => {
     hide(elemEndGame);
     hideFlex(elemPopUp);
     hideFlex(elemBoard);
     showFlex(elemButtonMenu);
+    flushData();
 }
 
 const closePopUpInfo = () => {
@@ -506,7 +612,27 @@ const closePopUpInfoWait = () => {
     hideFlex(elemPopUp);
     show(elemCloseButton);
 }
+const closeInfoBox = () => {
+    hideFlex(elemInfoBox);
+    document.getElementById("txtInfo").innerHTML = `Et toca el torn! (Ets la <span id="charUser">${gameStatus.player}</span>)`;
+}
+const hideInfoBoxWait = () => {
+    hide(elemInfoBoxGif);
+    document.getElementById("txtInfo").innerHTML = `Et toca el torn! (Ets la <span id="charUser">${gameStatus.player}</span>)`;
+}
 
+const flushData = () => { //Reseteixa les dades, aixi estalvia problemes
+    gameStatus = {
+        positions: [],
+        actualGameName: "",
+        lastPassword: "",
+        player: "",
+        lastPlayer: "",
+        lastWinner: "",
+        winsCrossThisSession: 0,
+        winsCircleThisSession: 0,
+    }
+}
 //-----------DISPLAYS
 
 const showFlex = (element) => { //Li donem un element i li dona display de flex
@@ -532,33 +658,3 @@ const hide = (element) => {
 const show = (element) => {
     element.classList.remove("d-none");
 }
-
-
-
-//AL CONECTARSE DIR CREAR O UNIR
-    //SI CREAR LI DIREM QUE POSI EL GAMENAME I GAME PASSWORD
-        //AL REQUEST TINDRA {
-/*     "action": "createGame",
-    "gameName": "xxxxx",
-    "gamePassword": "yyyyy"
-} */
-    //AL CREAR DEMANAR QUIN SIGNE VOLS
-    //SI VOL UNIR
-        //fara infoGame i veura si dona ok, si ho fa segueix i carrega les dades
-            //SI ESTA player buit esperar
-
-    //FUNCIO CARREGAR ESTAT
-        //infogame
-
-//AL ESTAR AL JOC
-    //Li direm que miri el moviment 
-
-//Interval que comprovi a quin usuari li toca cada 5 usuaris
-
-
-//EXAMPLE CREACIO
-// {"status":"OK","response":"The game has been created."}
-
-//EXAMPLE INFOGAME
-/* {"status":"OK","response":"Enjoy the
-game.","gameInfo":{"A1":"","A2":"","A3":"","B1":"","B2":"","B3":"","C1":"","C2":"","C3":""},"player":""} */

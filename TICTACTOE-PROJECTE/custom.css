@@ -3,37 +3,85 @@ html, body {
     width: 100%;
 }
 
+h1, h2, h3, h4, h5 {
+    font-family: 'Josefin Sans', sans-serif !important;
+    font-weight: 600;
+}
+
+label, button {
+    font-weight: 600 !important;
+    font-size:24px !important;
+}
+#buttonMenu div{
+    align-items: center;
+}
+#buttonMenu button{
+    width: 70%;
+}
+input {
+    font-family: 'Lato', sans-serif !important;
+}
+
 .absoluteCenter {
     display: grid;
     place-items: center;
 }
 
 /* POP UP */
-.fixedCenter{
+
+.fixedCenter {
     position: fixed;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    background-color:white;
-    width:25%;
-    height:30%;
+    background-color: white;
+    width: 35%;
+    height: 40%;
     border-radius: 20px;
     border: #f2f2f2 2px solid;
-    padding:10px;
+    padding: 10px;
 }
-.centerGrid{
+
+.centerGrid {
     place-items: center;
     display: grid;
 }
-#buttonsSign{
-    height:90%;
-    width:100%;
+
+#buttonsSign {
+    height: 90%;
+    width: 100%;
 }
-#rematchButton{
-    width:70%;
+
+#buttonsSign button {
+    width: 40%;
+}
+
+#rematchButton {
+    width: 70%;
+}
+
+#infoAbsolute {
+    position: fixed;
+    left: 50%;
+    bottom: 5%;
+    transform: translate(-50%, 0%);
+    background-color: white;
+    width: 50%;
+    border-radius: 20px;
+    border: #f2f2f2 2px solid;
+    padding: 10px;
+}
+
+#infoAbsolute h2 {
+    margin: 0;
+}
+
+.btn-light {
+    background-color: #f2f2f2;
 }
 
 /*          GAME BOARD          */
+
 .rowGameBoard {
     height: 33.33%;
     height: calc(100% / 3);
@@ -78,7 +126,6 @@ html, body {
 
 .rowGameBoard .col-sm:nth-of-type(3) {
     /*Third col*/
-    
     border-left: black 2.5px solid;
 }
 
@@ -90,8 +137,19 @@ html, body {
     .rowGameBoard .col-sm {
         font-size: 10vh;
     }
-    .fixedCenter{
-        height:60%;
-        width:80%;
+    .fixedCenter {
+        height: 60%;
+        width: 70%;
+    }
+    #rematchButton {
+        width: 80%;
+    }
+    #infoAbsolute {
+        width: 70%;
+        bottom: 1%;
+    }
+    #buttonMenu button{
+        font-size:24px !important;
+        width: 100%;
     }
 }

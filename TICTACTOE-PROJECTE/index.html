@@ -10,6 +10,9 @@
   <script src="script.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@500;600&family=Lato&display=swap"
+    rel="stylesheet">
 </head>
 
 <body class="absoluteCenter">
@@ -17,14 +20,15 @@
     <div id="buttonMenu" class="d-flex w-100">
       <div class="w-100 d-flex flex-column py-2 justify-content-center">
         <h1 class="text-center">TIC - TAC - TOE</h1>
-        <button onclick='loadFormGame("create")'>Crear partida</button>
-        <button onclick='loadFormGame("join")'>Unir-se</button>
+        <button class="btn btn-light btn-outline-dark rounded my-3" onclick='loadFormGame("create")'>Crear
+          partida</button>
+        <button class="btn btn-light btn-outline-dark rounded mt-3" onclick='loadFormGame("join")'>Unir-se</button>
       </div>
     </div>
     <div id="formContainer" class="d-none w-100">
-      <form class="w-100 text-center ">
+      <form class="w-100 text-center d-flex justify-content-center flex-column">
         <div class="d-flex flex-column py-2">
-          <label for="idGame">Codi Partida</label>
+          <label class="text-center" for="idGame">Codi Partida</label>
           <input type="text" id="idGame" name="idGame">
         </div>
         <div id="passwField" class="d-none flex-column py-2">
@@ -32,42 +36,42 @@
           <input type="text" id="passwordGame" name="passwordGame">
         </div>
         <div id="actionButtonField" class="d-flex flex-column py-2">
-          <button type="button" class="btn btn-dark disabled" onclick="joinGame()">Unir-se</button>
+          <button type="button" class="btn btn-dark" onclick="joinGame()">Unir-se</button>
         </div>
       </form>
     </div>
     <div id="gameBoard" class="d-none w-100">
       <div class="row rowGameBoard">
         <div id="A1" class="col-sm colGameBoard">
-          
+
         </div>
         <div id="B1" class="col-sm colGameBoard">
-          
+
         </div>
         <div id="C1" class="col-sm colGameBoard">
-          
+
         </div>
       </div>
       <div class="row rowGameBoard">
         <div id="A2" class="col-sm colGameBoard">
-          
+
         </div>
         <div id="B2" class="col-sm colGameBoard">
-          
+
         </div>
         <div id="C2" class="col-sm colGameBoard">
-          
+
         </div>
       </div>
       <div class="row rowGameBoard">
         <div id="A3" class="col-sm colGameBoard">
-          
+
         </div>
         <div id="B3" class="col-sm colGameBoard">
-          
+
         </div>
         <div id="C3" class="col-sm colGameBoard">
-          
+
         </div>
       </div>
     </div>
@@ -76,25 +80,31 @@
 
   <div id="popUp" class="fixedCenter d-none flex-column">
     <div id="alertBox" class="d-none centerGrid w-100 h-100">
-      <h2 id="txtAlert">placeholder</h2>
+      <h2 class="text-center" id="txtAlert">placeholder</h2>
       <button id="closeButton">Close</button>
-      <img id="gif" class="py-2 d-none" src="cupertino_activity_indicator.gif" style="height:50px">
+      <img id="gif" class="d-none" src="loading.gif" style="height:4ch">
     </div>
     <div id="chooseSign" class="w-100 h-100 d-none centerGrid">
       <h2 class="text-center">Escolleix quin signe jugaràs</h2>
-      <div id="buttonsSign" class="d-flex">
-        <button id="O" class="flex-fill">O</button>
-        <button id="X" class="flex-fill">X</button>
+      <div id="buttonsSign" class="d-flex justify-content-center">
+        <button id="O" class="btn btn-light btn-outline-dark rounded  mr-2">O</button>
+        <button id="X" class="btn btn-light btn-outline-dark rounded  ml-2">X</button>
       </div>
     </div>
     <div id="endGame" class="w-100 h-100 d-none centerGrid">
       <h2 id="resultText" class="text-center">RESULTADO PLACEHOLDER</h2>
-      <h3 class="text-center">✖️<span id="crossWins">0</span> - <span id="dotkWins">0</span>⚫</h2>
-      <div id="rematchButton" class="d-flex h-50">
-        <button id="rematch" class="flex-md-fill">Rematch</button>
-        <button id="returnMenu" class="flex-md-fill">Tornar al menu</button>
-      </div>
+      <h3 class="text-center">✖️<span id="crossWins">0</span> - <span id="dotWins">0</span>⚫</h2>
+        <div id="rematchButton" class="d-flex h-50">
+          <button id="rematch" class="btn btn-light btn-outline-dark rounded flex-fill mr-2">Rematch</button>
+          <button id="returnMenu" class="btn btn-light btn-outline-dark rounded flex-fill ml-2">Tornar al menu</button>
+        </div>
     </div>
+  </div>
+
+
+  <div id="infoAbsolute" class="d-none justify-content-center">
+    <h2 class="text-center" id="txtInfo">Et toca el torn! (Ets la <span id="charUser">O</span>)</h2>
+    <img id="gifInfo" class="d-none" src="loading.gif" style="height:4ch">
   </div>
 
 </body>
