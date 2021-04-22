@@ -19,24 +19,24 @@
   <div id="mainContainer" class="d-flex justify-content-center w-50 h-50 align-middle">
     <div id="buttonMenu" class="d-flex w-100">
       <div class="w-100 d-flex flex-column py-2 justify-content-center">
-        <h1 class="text-center">TIC - TAC - TOE</h1>
-        <button class="btn btn-light btn-outline-dark rounded my-3" onclick='loadFormGame("create")'>Crear
+        <h1 class="text-center" style="font-size: 45px;">TIC - TAC - TOE</h1>
+        <button class="btn btn-light btn-outline-dark rounded my-3 decentButtons" onclick='loadFormGame("create")'>Crear
           partida</button>
-        <button class="btn btn-light btn-outline-dark rounded mt-3" onclick='loadFormGame("join")'>Unir-se</button>
+        <button class="btn btn-light btn-outline-dark rounded mt-3 decentButtons" onclick='loadFormGame("join")'>Unir-se</button>
       </div>
     </div>
     <div id="formContainer" class="d-none w-100">
       <form class="w-100 text-center d-flex justify-content-center flex-column">
-        <div class="d-flex flex-column py-2">
+        <div class="d-flex flex-column py-2 justify-content-center itemsCenter" >
           <label class="text-center" for="idGame">Codi Partida</label>
-          <input type="text" id="idGame" name="idGame">
+          <input type="text" id="idGame" name="idGame" class="decentButtons">
         </div>
-        <div id="passwField" class="d-none flex-column py-2">
+        <div id="passwField" class="d-none flex-column py-2 justify-content-center itemsCenter">
           <label for="passwordGame">Contrasenya</label>
-          <input type="text" id="passwordGame" name="passwordGame">
+          <input type="text" id="passwordGame" name="passwordGame" class="decentButtons">
         </div>
-        <div id="actionButtonField" class="d-flex flex-column py-2">
-          <button type="button" class="btn btn-dark" onclick="joinGame()">Unir-se</button>
+        <div id="actionButtonField" class="d-flex flex-column py-2 justify-content-center itemsCenter">
+          <button type="button" class="btn btn-dark decentButtons" onclick="joinGame()">Unir-se</button>
         </div>
       </form>
     </div>
@@ -81,7 +81,7 @@
   <div id="popUp" class="fixedCenter d-none flex-column">
     <div id="alertBox" class="d-none centerGrid w-100 h-100">
       <h2 class="text-center" id="txtAlert">placeholder</h2>
-      <button id="closeButton">Close</button>
+      <button id="closeButton" class="btn btn-light btn-outline-dark rounded w-50">Close</button>
       <img id="gif" class="d-none" src="loading.gif" style="height:4ch">
     </div>
     <div id="chooseSign" class="w-100 h-100 d-none centerGrid">
@@ -93,8 +93,8 @@
     </div>
     <div id="endGame" class="w-100 h-100 d-none centerGrid">
       <h2 id="resultText" class="text-center">RESULTADO PLACEHOLDER</h2>
-      <h3 class="text-center">✖️<span id="crossWins">0</span> - <span id="dotWins">0</span>⚫</h2>
-        <div id="rematchButton" class="d-flex h-50">
+      <h3 class="text-center">✖️<span class="ml-2" id="crossWins">0</span> - <span class="mr-2" id="dotWins">0</span>⚫</h2>
+        <div id="rematchButton" class="d-flex h-50 decentButtons">
           <button id="rematch" class="btn btn-light btn-outline-dark rounded flex-fill mr-2">Rematch</button>
           <button id="returnMenu" class="btn btn-light btn-outline-dark rounded flex-fill ml-2">Tornar al menu</button>
         </div>
@@ -102,9 +102,9 @@
   </div>
 
 
-  <div id="infoAbsolute" class="d-none justify-content-center">
+  <div id="infoAbsolute" class="d-none justify-content-center itemsCenter">
     <h2 class="text-center" id="txtInfo">Et toca el torn! (Ets la <span id="charUser">O</span>)</h2>
-    <img id="gifInfo" class="d-none" src="loading.gif" style="height:4ch">
+    <img id="gifInfo" class="d-none" src="loading.gif" >
   </div>
 
 </body>

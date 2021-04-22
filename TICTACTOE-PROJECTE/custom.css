@@ -1,6 +1,7 @@
 html, body {
     height: 100%;
     width: 100%;
+    
 }
 
 h1, h2, h3, h4, h5 {
@@ -25,8 +26,12 @@ input {
 .absoluteCenter {
     display: grid;
     place-items: center;
+    background-color:#FFC700;
 }
 
+.btn-light {
+    background-color: #f2f2f2;
+}
 /* POP UP */
 
 .fixedCenter {
@@ -60,6 +65,16 @@ input {
     width: 70%;
 }
 
+.itemsCenter{
+
+    place-items: center;
+}
+.decentButtons{
+    width: 70%;
+}
+
+
+/*INFO BOX */
 #infoAbsolute {
     position: fixed;
     left: 50%;
@@ -70,14 +85,18 @@ input {
     border-radius: 20px;
     border: #f2f2f2 2px solid;
     padding: 10px;
+    place-items: center;
 }
 
 #infoAbsolute h2 {
     margin: 0;
 }
 
-.btn-light {
-    background-color: #f2f2f2;
+
+#gifInfo{
+    margin-left:1.5rem;
+    height:4ch;
+    
 }
 
 /*          GAME BOARD          */
@@ -85,6 +104,7 @@ input {
 .rowGameBoard {
     height: 33.33%;
     height: calc(100% / 3);
+    background-color:white;
 }
 
 .rowGameBoard .col-sm {
@@ -100,6 +120,7 @@ input {
 .rowGameBoard:first-of-type {
     /*First row*/
     border-bottom: black 2.5px solid;
+    border-radius: 15px 15px 0px 0px;
 }
 
 .rowGameBoard:nth-of-type(2) {
@@ -111,6 +132,7 @@ input {
 .rowGameBoard:nth-of-type(3) {
     /*Third row*/
     border-top: black 2.5px solid;
+    border-radius: 0px 0px 15px 15px ;
 }
 
 .rowGameBoard .col-sm:first-of-type {
@@ -130,6 +152,9 @@ input {
 }
 
 @media only screen and (max-width: 768px) {
+    .absoluteCenter{
+        padding-bottom:8%;
+    }
     #mainContainer {
         width: 90% !important;
         height: 70% !important;
@@ -144,6 +169,9 @@ input {
     #rematchButton {
         width: 80%;
     }
+    #rematchButton button{
+        font-size:19px !important;
+    }
     #infoAbsolute {
         width: 70%;
         bottom: 1%;
@@ -152,4 +180,8 @@ input {
         font-size:24px !important;
         width: 100%;
     }
+    #gifInfo{
+        margin-left:0;
+    }
+
 }

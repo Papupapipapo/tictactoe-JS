@@ -89,15 +89,17 @@ const joinGameInProgress = (infoActual) => { //Per a fer join a una partida
         loadBoard();
         if (!checkEnd()) { //Si la partida no ha acabat, carregará els events
             boardEvents();
+            if (checkIfEmpty(possiblePlayer)) {
+                //CHECK SI HI HA PLAYER, SINO ESPERAR A el altre player estigui agafat
+                loadPopUpInfoWait("Esperant a altre usuari fagi primer moviment");
+                startWaitHost();
+            } else { //En cas de que tot estigui bé, el usuari que surt actualment que esta per jugar será el caracter del jugador
+                gameStatus.player = possiblePlayer;
+                loadInfoBox();
+            }
         }
-        if (checkIfEmpty(possiblePlayer)) {
-            //CHECK SI HI HA PLAYER, SINO ESPERAR A el altre player estigui agafat
-            loadPopUpInfoWait("Esperant a altre usuari fagi primer moviment");
-            startWaitHost();
-        } else { //En cas de que tot estigui bé, el usuari que surt actualment que esta per jugar será el caracter del jugador
-            loadInfoBox();
-            gameStatus.player = possiblePlayer;
-        }
+
+      
     } else {
         loadPopUpInfo(infoActual["response"]);
     }
@@ -119,8 +121,9 @@ const joinReloadGame = (infoActual) => { //El mateix que abans pero refrescant e
         } else {
             gameStatus.player = possiblePlayer;
             loadInfoBox();
+            boardEvents();
         }
-        boardEvents();
+        
     } else {
         loadPopUpInfo(infoActual["response"]);
     }
@@ -175,10 +178,10 @@ const newGameReloadCheck = (infoActual) => { //Aqui el que fara es primer compro
             //CHECK SI HI HA PLAYER, SINO ESPERAR A el altre player estigui agafat
             loadPopUpInfoWait("Esperant a altre usuari fagi primer moviment");
             startWaitHost();
-
         } else {
             loadInfoBox();
             gameStatus.player = possiblePlayer;
+            boardEvents();
         }
     };
 }
@@ -188,6 +191,7 @@ const playerCheck = (infoActual) => { //Comprovant de si el jugador host ha fet 
         updatePositions(infoActual);
         refreshGameBoardFields();
         loadInfoBox();
+        boardEvents();
     };
 }
 const checkStatus = (status) => { //Mirar si l'status esta ok
@@ -247,7 +251,7 @@ const loadFormGame = (typeAction) => { //Ensenya el container i ensenya o amaga 
         return;
     }
     showFlex(document.getElementById("passwField"));
-    document.getElementById("actionButtonField").innerHTML = `<button type="button" class="btn btn-dark" 
+    document.getElementById("actionButtonField").innerHTML = `<button type="button" class="btn btn-dark decentButtons" 
     onclick="createGame()">Crear partida</button>`;
 }
 
